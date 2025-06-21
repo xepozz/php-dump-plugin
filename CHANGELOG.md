@@ -1,6 +1,6 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
-# PHP Opcodes Changelog
+# PHP Dump Changelog
 
 ## [Unreleased]
 ### Added
