@@ -1,4 +1,4 @@
-package com.github.xepozz.phpopcodesplugin.startup
+package com.github.xepozz.php_opcodes.startup
 
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project

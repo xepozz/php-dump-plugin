@@ -1,15 +1,16 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.xepozz.phpopcodesplugin</id>
-    <name>php-opcodes-plugin</name>
-    <vendor>xepozz</vendor>
+    <id>com.github.xepozz.php_opcodes</id>
+    <name>PHP Opcodes</name>
+    <vendor email="xepozz@list.ru" url="https://github.com/xepozz">Dmitrii Derepko (@xepozz)</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.jetbrains.php</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.xepozz.phpopcodesplugin.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="com.github.xepozz.phpopcodesplugin.startup.MyProjectActivity" />
+        <toolWindow factoryClass="com.github.xepozz.php_opcodes.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <postStartupActivity implementation="com.github.xepozz.php_opcodes.startup.MyProjectActivity" />
     </extensions>
 </idea-plugin>

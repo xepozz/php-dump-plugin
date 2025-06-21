@@ -1,4 +1,4 @@
-package com.github.xepozz.phpopcodesplugin.toolWindow
+package com.github.xepozz.php_opcodes.toolWindow
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -8,8 +8,8 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import com.github.xepozz.phpopcodesplugin.MyBundle
-import com.github.xepozz.phpopcodesplugin.services.MyProjectService
+import com.github.xepozz.php_opcodes.MyBundle
+import com.github.xepozz.php_opcodes.services.MyProjectService
 import javax.swing.JButton
 
 

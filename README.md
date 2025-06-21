@@ -1,4 +1,4 @@
-# php-opcodes-plugin
+# PHP Opcodes
 
 ![Build](https://github.com/xepozz/php-opcodes-plugin/workflows/Build/badge.svg)
 [![Version](https://img.shields.io/jetbrains/plugin/v/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
@@ -17,11 +17,9 @@
 - [ ] Click the <kbd>Watch</kbd> button on the top of the [IntelliJ Platform Plugin Template][template] to be notified about releases containing new features and fixes.
 
 <!-- Plugin description -->
-This Fancy IntelliJ Platform Plugin is going to be your implementation of the brilliant ideas that you have.
+Plugin exposes PHP Opcodes for the selected PHP code snippet or file.
 
-This specific section is a source for the [plugin.xml](/src/main/resources/META-INF/plugin.xml) file which will be extracted by the [Gradle](/build.gradle.kts) during the build process.
-
-To keep everything working, do not remove `<!-- ... -->` sections. 
+It is possible to navigate through the codebase and watch related opcodes.
 <!-- Plugin description end -->
 
 ## Installation

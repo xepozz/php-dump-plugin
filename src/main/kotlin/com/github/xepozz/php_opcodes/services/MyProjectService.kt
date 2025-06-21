@@ -1,9 +1,9 @@
-package com.github.xepozz.phpopcodesplugin.services
+package com.github.xepozz.php_opcodes.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import com.github.xepozz.phpopcodesplugin.MyBundle
+import com.github.xepozz.php_opcodes.MyBundle
 
 @Service(Service.Level.PROJECT)
 class MyProjectService(project: Project) {
