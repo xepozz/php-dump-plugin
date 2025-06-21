@@ -6,11 +6,17 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.jetbrains.php</depends>
+    <depends>com.jetbrains.sh</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.xepozz.php_opcodes.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="com.github.xepozz.php_opcodes.startup.MyProjectActivity" />
+        <toolWindow
+                factoryClass="com.github.xepozz.php_opcodes.CompositeWindowFactory"
+                id="PHP File Dump" anchor="right" secondary="false"/>
     </extensions>
+    <projectListeners>
+        <listener class="com.github.xepozz.php_opcodes.startup.ProjectFileEditorListener"
+                  topic="com.intellij.openapi.fileEditor.FileEditorManagerListener" />
+    </projectListeners>
 </idea-plugin>
