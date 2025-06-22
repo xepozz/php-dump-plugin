@@ -1,9 +1,10 @@
 package com.github.xepozz.php_dump.startup
 
-import com.github.xepozz.php_dump.services.OpcodesDumperService
+import com.github.xepozz.php_dump.panel.RefreshablePanel
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.ToolWindowManager
 
 class ProjectFileEditorListener(val project: Project) : FileEditorManagerListener {
 //    override fun fileClosed(source: FileEditorManager, file: VirtualFile) {
@@ -19,12 +20,15 @@ class ProjectFileEditorListener(val project: Project) : FileEditorManagerListene
         super.selectionChanged(event)
         println("selection changed $event")
 
-        val virtualFile = event.newFile ?: return
+        val toolWindowManager = ToolWindowManager.getInstance(project)
+        val toolWindow = toolWindowManager.getToolWindow("PHP Dump")
 
-        val service = project.getService(OpcodesDumperService::class.java)
+        toolWindow
+            ?.component
+            ?.components
+            ?.mapNotNull { it as? RefreshablePanel }
+            ?.forEach { it.refresh(project) }
+            ?: return
 
-        service.dump(virtualFile.path) {
-            println("dump in selection changed ")
-        }
     }
 }

@@ -11,24 +11,31 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import com.intellij.ui.jcef.JBCefBrowser
+import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.php.config.PhpProjectConfigurationFacade
 import com.jetbrains.php.config.interpreters.PhpInterpretersManagerImpl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.log
 
 @Service(Service.Level.PROJECT)
 class OpcodesDumperService(var project: Project) : Disposable {
     var consoleView: ConsoleView? = null
 
+    companion object {
+        fun dump(file: VirtualFile, project: Project) {
+            val service = project.getService(OpcodesDumperService::class.java)
+
+            service.dump(file.path)
+        }
+    }
+
     override fun dispose() {
         consoleView?.dispose()
     }
 
-    fun dump(file: String, callback: () -> Unit) {
+    fun dump(file: String, callback: () -> Unit = {}) {
         val interpretersManager = PhpInterpretersManagerImpl.getInstance(project)
         val interpreter = PhpProjectConfigurationFacade.getInstance(project).interpreter
             ?: interpretersManager.interpreters.firstOrNull() ?: return

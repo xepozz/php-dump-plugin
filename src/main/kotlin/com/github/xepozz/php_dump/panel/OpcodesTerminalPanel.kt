@@ -1,8 +1,11 @@
 package com.github.xepozz.php_dump.panel
 
 import com.github.xepozz.php_dump.actions.RunDumpCommandAction
+import com.github.xepozz.php_dump.services.OpcodesDumperService
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import java.awt.BorderLayout
 import java.awt.GridLayout
@@ -13,7 +16,7 @@ import javax.swing.JPanel
 
 class OpcodesTerminalPanel(
     val terminalViewComponent: JComponent,
-) : SimpleToolWindowPanel(false, false) {
+) : SimpleToolWindowPanel(false, false), RefreshablePanel {
     init {
         createToolBar()
         createContent()
@@ -45,5 +48,12 @@ class OpcodesTerminalPanel(
         })
 
         setContent(responsivePanel)
+    }
+
+    override fun refresh(project: Project) {
+        val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
+        val virtualFile = editor.virtualFile ?: return
+
+        OpcodesDumperService.dump(virtualFile, project)
     }
 }
