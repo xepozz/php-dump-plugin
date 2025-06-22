@@ -10,8 +10,12 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.jcef.JBCefBrowser
+import javax.swing.Icon
 
 open class CompositeWindowFactory : ToolWindowFactory, DumbAware {
+    override val icon: Icon?
+        get() = PhpDumpIcons.POT
+
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val browser = JBCefBrowser.createBuilder()
             .setEnableOpenDevToolsMenuItem(true)

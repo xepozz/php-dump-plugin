@@ -13,7 +13,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow
                 factoryClass="com.github.xepozz.php_opcodes.CompositeWindowFactory"
-                id="PHP File Dump" anchor="right" secondary="false"/>
+                id="PHP Dump" anchor="right" secondary="false"/>
     </extensions>
     <projectListeners>
         <listener class="com.github.xepozz.php_opcodes.startup.ProjectFileEditorListener"
