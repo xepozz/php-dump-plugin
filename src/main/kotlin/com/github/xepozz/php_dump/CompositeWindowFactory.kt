@@ -17,24 +17,21 @@ open class CompositeWindowFactory : ToolWindowFactory, DumbAware {
         get() = PhpDumpIcons.POT
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val browser = JBCefBrowser.createBuilder()
-            .setEnableOpenDevToolsMenuItem(true)
-            .build()
-
-        val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
-        consoleView.addMessageFilter(UrlFilter())
-
         val contentFactory = ContentFactory.getInstance()
         val contentManager = toolWindow.contentManager
 
-        val opcodesDumperService = toolWindow.project.getService(OpcodesDumperService::class.java)
-        opcodesDumperService.browser = browser
-        opcodesDumperService.consoleView = consoleView
+        val opcodesTerminalLayout = run {
+            val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
+
+            val opcodesDumperService = toolWindow.project.getService(OpcodesDumperService::class.java)
+            opcodesDumperService.consoleView = consoleView
 
         val terminalLayout = OpcodesTerminalPanel(consoleView.component)
+            OpcodesTerminalPanel(consoleView.component)
+        }
 
         contentFactory.apply {
-            this.createContent(terminalLayout, "Opcodes", false).apply {
+            this.createContent(opcodesTerminalLayout, "Opcodes", false).apply {
                 contentManager.addContent(
                     this.apply {
                         this.isPinnable = true

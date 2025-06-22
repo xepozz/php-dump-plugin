@@ -2,10 +2,15 @@ package com.github.xepozz.php_dump.services
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.KillableColoredProcessHandler
+import com.intellij.execution.process.ProcessAdapter
+import com.intellij.execution.process.ProcessEvent
+import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.execution.ui.ConsoleView
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
 import com.intellij.ui.jcef.JBCefBrowser
 import com.jetbrains.php.config.PhpProjectConfigurationFacade
 import com.jetbrains.php.config.interpreters.PhpInterpretersManagerImpl
@@ -13,15 +18,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.log
 
 @Service(Service.Level.PROJECT)
 class OpcodesDumperService(var project: Project) : Disposable {
-    var browser: JBCefBrowser? = null
     var consoleView: ConsoleView? = null
 
     override fun dispose() {
         consoleView?.dispose()
-        browser?.dispose()
     }
 
     fun dump(file: String, callback: () -> Unit) {
@@ -66,13 +70,19 @@ class OpcodesDumperService(var project: Project) : Disposable {
         val command = GeneralCommandLine(commandArgs)
         command.withRedirectErrorStream(false)
 
-        val commandLine = command.commandLineString + " 1>/dev/null"
-        val processHandler = KillableColoredProcessHandler.Silent(command.createProcess(), commandLine, command.charset, emptySet())
+        val processHandler = KillableColoredProcessHandler.Silent(command)
         processHandler.setShouldKillProcessSoftly(false)
         processHandler.setShouldDestroyProcessRecursively(true)
+        processHandler.addProcessListener(object : ProcessAdapter() {
+            override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+                if (outputType == ProcessOutputTypes.STDERR) {
+                    consoleView?.print(event.text, ConsoleViewContentType.NORMAL_OUTPUT)
+                }
+            }
+        })
 
         consoleView?.clear()
-        consoleView?.attachToProcess(processHandler)
+//        consoleView?.attachToProcess(processHandler)
 //        consoleView?.requestScrollingToEnd()
 
         processHandler.startNotify()
