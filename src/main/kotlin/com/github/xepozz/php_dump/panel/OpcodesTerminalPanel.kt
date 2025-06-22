@@ -1,6 +1,6 @@
-package com.github.xepozz.php_opcodes.panel
+package com.github.xepozz.php_dump.panel
 
-import com.github.xepozz.php_opcodes.actions.RunDumpCommandAction
+import com.github.xepozz.php_dump.actions.RunDumpCommandAction
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.ui.SimpleToolWindowPanel

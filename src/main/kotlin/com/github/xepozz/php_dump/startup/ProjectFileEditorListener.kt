@@ -1,6 +1,6 @@
-package com.github.xepozz.php_opcodes.startup
+package com.github.xepozz.php_dump.startup
 
-import com.github.xepozz.php_opcodes.services.OpcodesDumperService
+import com.github.xepozz.php_dump.services.OpcodesDumperService
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project

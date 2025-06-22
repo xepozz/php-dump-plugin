@@ -1,6 +1,6 @@
-package com.github.xepozz.php_opcodes.actions
+package com.github.xepozz.php_dump.actions
 
-import com.github.xepozz.php_opcodes.services.OpcodesDumperService
+import com.github.xepozz.php_dump.services.OpcodesDumperService
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction

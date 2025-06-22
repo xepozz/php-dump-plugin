@@ -1,6 +1,6 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.xepozz.php_opcodes</id>
+    <id>com.github.xepozz.php_dump</id>
     <name>PHP Dump</name>
     <vendor email="xepozz@list.ru" url="https://github.com/xepozz">Dmitrii Derepko (@xepozz)</vendor>
 
@@ -12,11 +12,11 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow
-                factoryClass="com.github.xepozz.php_opcodes.CompositeWindowFactory"
+                factoryClass="com.github.xepozz.php_dump.CompositeWindowFactory"
                 id="PHP Dump" anchor="right" secondary="false"/>
     </extensions>
     <projectListeners>
-        <listener class="com.github.xepozz.php_opcodes.startup.ProjectFileEditorListener"
+        <listener class="com.github.xepozz.php_dump.startup.ProjectFileEditorListener"
                   topic="com.intellij.openapi.fileEditor.FileEditorManagerListener" />
     </projectListeners>
 </idea-plugin>

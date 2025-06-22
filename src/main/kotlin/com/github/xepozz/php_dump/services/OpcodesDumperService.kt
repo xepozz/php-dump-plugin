@@ -1,4 +1,4 @@
-package com.github.xepozz.php_opcodes.services
+package com.github.xepozz.php_dump.services
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.KillableColoredProcessHandler

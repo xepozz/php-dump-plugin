@@ -1,4 +1,4 @@
-package com.github.xepozz.php_opcodes
+package com.github.xepozz.php_dump
 
 import com.intellij.openapi.util.IconLoader
 import kotlin.jvm.java

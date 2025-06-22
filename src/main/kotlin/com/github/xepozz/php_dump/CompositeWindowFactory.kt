@@ -1,7 +1,7 @@
-package com.github.xepozz.php_opcodes
+package com.github.xepozz.php_dump
 
-import com.github.xepozz.php_opcodes.panel.OpcodesTerminalPanel
-import com.github.xepozz.php_opcodes.services.OpcodesDumperService
+import com.github.xepozz.php_dump.panel.OpcodesTerminalPanel
+import com.github.xepozz.php_dump.services.OpcodesDumperService
 import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.execution.filters.UrlFilter
 import com.intellij.openapi.project.DumbAware

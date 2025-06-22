@@ -1,4 +1,4 @@
-package com.github.xepozz.php_opcodes
+package com.github.xepozz.php_dump
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls
