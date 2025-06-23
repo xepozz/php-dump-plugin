@@ -35,7 +35,7 @@ class TokensDumperService(var project: Project) : Disposable {
         consoleView?.dispose()
     }
 
-    fun dump(file: String, callback: () -> Unit = {}) {
+    fun dump(file: String) {
         val interpretersManager = PhpInterpretersManagerImpl.getInstance(project)
         val interpreter = PhpProjectConfigurationFacade.getInstance(project).interpreter
             ?: interpretersManager.interpreters.firstOrNull() ?: return
@@ -81,7 +81,6 @@ class TokensDumperService(var project: Project) : Disposable {
 
         CoroutineScope(Dispatchers.IO).launch {
             executeCommand(commandArgs)
-            callback()
         }
     }
 

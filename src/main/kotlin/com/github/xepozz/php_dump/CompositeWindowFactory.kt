@@ -2,9 +2,6 @@ package com.github.xepozz.php_dump
 
 import com.github.xepozz.php_dump.panel.OpcodesTerminalPanel
 import com.github.xepozz.php_dump.panel.TokensTerminalPanel
-import com.github.xepozz.php_dump.services.OpcodesDumperService
-import com.github.xepozz.php_dump.services.TokensDumperService
-import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
@@ -20,24 +17,8 @@ open class CompositeWindowFactory : ToolWindowFactory, DumbAware {
         val contentFactory = ContentFactory.getInstance()
         val contentManager = toolWindow.contentManager
 
-        val opcodesTerminalLayout = run {
-            val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
-
-            val service = toolWindow.project.getService(OpcodesDumperService::class.java)
-            service.consoleView = consoleView
-
-            OpcodesTerminalPanel(consoleView.component)
-        }
-
-        val tokensTerminalLayout = run {
-            val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
-
-            val service = toolWindow.project.getService(TokensDumperService::class.java)
-            service.consoleView = consoleView
-
-            TokensTerminalPanel(consoleView.component)
-        }
-
+        val opcodesTerminalLayout = OpcodesTerminalPanel(project)
+        val tokensTerminalLayout = TokensTerminalPanel(project)
 
         contentFactory.apply {
             this.createContent(opcodesTerminalLayout, "Opcodes", false).apply {

@@ -2,6 +2,7 @@ package com.github.xepozz.php_dump.panel
 
 import com.github.xepozz.php_dump.actions.RunDumpTokensCommandAction
 import com.github.xepozz.php_dump.services.TokensDumperService
+import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -15,9 +16,18 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 
 class TokensTerminalPanel(
-    val terminalViewComponent: JComponent,
+    val project: Project,
 ) : SimpleToolWindowPanel(false, false), RefreshablePanel {
+    var viewComponent: JComponent
+    var service: TokensDumperService
+
     init {
+        val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
+        viewComponent = consoleView.component
+
+        service = project.getService(TokensDumperService::class.java)
+        service.consoleView = consoleView
+
         createToolBar()
         createContent()
     }
@@ -39,11 +49,11 @@ class TokensTerminalPanel(
 
     private fun createContent() {
         val responsivePanel = JPanel(BorderLayout())
-        responsivePanel.add(terminalViewComponent, BorderLayout.CENTER)
+        responsivePanel.add(viewComponent, BorderLayout.CENTER)
         responsivePanel.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent?) {
-                terminalViewComponent.revalidate()
-                terminalViewComponent.repaint()
+                viewComponent.revalidate()
+                viewComponent.repaint()
             }
         })
 
@@ -54,6 +64,6 @@ class TokensTerminalPanel(
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         val virtualFile = editor.virtualFile ?: return
 
-        TokensDumperService.dump(virtualFile, project)
+        service.dump(virtualFile.path)
     }
 }
