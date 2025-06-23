@@ -11,7 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 
 @Service(Service.Level.PROJECT)
-class TokensDumperService(var project: Project) : Disposable, DumperServiceInterface {
+class TokensObjectDumperService(var project: Project) : Disposable, DumperServiceInterface {
     var consoleView: ConsoleView? = null
 
     override fun dispose() {
@@ -23,16 +23,15 @@ class TokensDumperService(var project: Project) : Disposable, DumperServiceInter
         val phpSnippet = $$"""
             print_r(
                 array_map(
-                    function ($token) {
+                    function (PhpToken $token) {
                         return [
-                            'line' => $isArray = is_array($token) ? $token[2] : null,
-                            'name' => $isArray ? token_name($token[0]) : null,
-                            'value' => $isArray ? $token[1] : $token,
+                            'line' => $token->line,
+                            'pos' => $token->pos,
+                            'name' => $token->getTokenName(),
+                            'value' => $token->text,
                         ];
                     },
-                    token_get_all(
-                        file_get_contents($argv[1])
-                    ),
+                    \PhpToken::tokenize(file_get_contents($argv[1])),
                 )
             );
         """.trimIndent()

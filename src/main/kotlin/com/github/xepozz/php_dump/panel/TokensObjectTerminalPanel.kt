@@ -1,7 +1,7 @@
 package com.github.xepozz.php_dump.panel
 
 import com.github.xepozz.php_dump.actions.RunDumpTokensCommandAction
-import com.github.xepozz.php_dump.services.TokensDumperService
+import com.github.xepozz.php_dump.services.TokensObjectDumperService
 import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
@@ -15,17 +15,17 @@ import java.awt.event.ComponentEvent
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-class TokensTerminalPanel(
+class TokensObjectTerminalPanel(
     val project: Project,
 ) : SimpleToolWindowPanel(false, false), RefreshablePanel {
     var viewComponent: JComponent
-    var service: TokensDumperService
+    var service: TokensObjectDumperService
 
     init {
         val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
         viewComponent = consoleView.component
 
-        service = project.getService(TokensDumperService::class.java)
+        service = project.getService(TokensObjectDumperService::class.java)
         service.consoleView = consoleView
 
         createToolBar()
