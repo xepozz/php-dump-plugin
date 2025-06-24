@@ -13,10 +13,10 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow
                 factoryClass="com.github.xepozz.php_dump.CompositeWindowFactory"
-                id="PHP Dump" anchor="right" secondary="false"/>
+                id="PHP Dump" anchor="right" secondary="false" icon="/icons/pot.svg"/>
     </extensions>
     <projectListeners>
         <listener class="com.github.xepozz.php_dump.startup.ProjectFileEditorListener"
-                  topic="com.intellij.openapi.fileEditor.FileEditorManagerListener" />
+                  topic="com.intellij.openapi.fileEditor.FileEditorManagerListener"/>
     </projectListeners>
 </idea-plugin>
