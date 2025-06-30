@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileEditor.FileEditorManager
+import kotlinx.coroutines.runBlocking
 
 class RunDumpTokensCommandAction(
     val dumpService: DumperServiceInterface
@@ -17,7 +18,7 @@ class RunDumpTokensCommandAction(
         val file = editor.virtualFile ?: return
         println("file $file")
 
-        dumpService.dump(file)
+        runBlocking { dumpService.dump(file) }
     }
 
     override fun getActionUpdateThread() = ActionUpdateThread.BGT

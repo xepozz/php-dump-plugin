@@ -1,30 +1,21 @@
 package com.github.xepozz.php_dump.services
 
+import com.github.xepozz.php_dump.stubs.token_object.TokenParser
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessOutputTypes
-import com.intellij.execution.ui.ConsoleView
-import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Service(Service.Level.PROJECT)
-class TokensObjectDumperService(var project: Project) : Disposable, DumperServiceInterface {
-    var consoleView: ConsoleView? = null
-
-    override fun dispose() {
-        consoleView?.dispose()
-    }
-
-    override suspend fun dump(file: String) {
+class TokensObjectTreeDumperService(var project: Project) : DumperServiceInterface {
+    override suspend fun dump(file: String): Any {
         // language=injectablephp
         val phpSnippet = $$"""
-            print_r(
+            echo json_encode(
                 array_map(
                     function (PhpToken $token) {
                         return [
@@ -39,19 +30,26 @@ class TokensObjectDumperService(var project: Project) : Disposable, DumperServic
             );
         """.trimIndent()
 
-        consoleView?.clear()
-        CoroutineScope(Dispatchers.IO).launch {
+        return withContext(Dispatchers.IO) {
+            val output = StringBuilder()
+
             PhpCommandExecutor.execute(file, phpSnippet, project, object : ProcessAdapter() {
                 override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
                     when (outputType) {
-                        ProcessOutputTypes.STDERR -> consoleView?.print(event.text, ConsoleViewContentType.ERROR_OUTPUT)
-                        ProcessOutputTypes.STDOUT -> consoleView?.print(
-                            event.text,
-                            ConsoleViewContentType.NORMAL_OUTPUT
-                        )
+                        ProcessOutputTypes.STDERR -> output.append(event.text)
+                        ProcessOutputTypes.STDOUT -> output.append(event.text)
                     }
                 }
             })
+
+
+            val jsonString = output.toString()
+//            println("jsonString: $jsonString")
+
+            val tree = TokenParser.parseTokens(jsonString)
+//            println("result tree: $tree")
+
+            return@withContext tree
         }
     }
 }

@@ -3,38 +3,32 @@ package com.github.xepozz.php_dump.services
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.process.ProcessAdapter
+import com.intellij.execution.process.ProcessEvent
 import com.intellij.openapi.project.Project
 import com.jetbrains.php.config.PhpProjectConfigurationFacade
 import com.jetbrains.php.config.interpreters.PhpInterpretersManagerImpl
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlin.coroutines.suspendCoroutine
 
 object PhpCommandExecutor {
-    fun execute(file: String, phpSnippet: String, project: Project, processListener: ProcessAdapter) {
+    suspend fun execute(file: String, phpSnippet: String, project: Project, processListener: ProcessAdapter) {
         val interpretersManager = PhpInterpretersManagerImpl.getInstance(project)
         val interpreter = PhpProjectConfigurationFacade.getInstance(project).interpreter
             ?: interpretersManager.interpreters.firstOrNull() ?: return
 
+        val interpreterPath = interpreter.pathToPhpExecutable ?: return
         val commandArgs = buildList {
-            interpreter.apply {
-                println("interpreter: $this")
-                add(this.pathToPhpExecutable!!)
-            }
+            add(interpreterPath)
             add("-r")
             add(phpSnippet)
 
             add(file)
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            executeCommand(commandArgs, processListener)
-        }
+        executeCommand(commandArgs, processListener)
     }
 
     private suspend fun executeCommand(commandArgs: List<String>, processListener: ProcessAdapter) =
-        withContext(Dispatchers.IO) {
+        suspendCoroutine<Int> { continuation ->
             val command = GeneralCommandLine(commandArgs)
             command.withRedirectErrorStream(false)
 
@@ -43,6 +37,15 @@ object PhpCommandExecutor {
             processHandler.setShouldKillProcessSoftly(false)
             processHandler.setShouldDestroyProcessRecursively(true)
             processHandler.addProcessListener(processListener)
+            processHandler.addProcessListener(object : ProcessAdapter() {
+                override fun processTerminated(event: ProcessEvent) {
+                    continuation.resumeWith(Result.success(event.exitCode))
+                }
+
+                override fun processNotStarted() {
+                    continuation.resumeWith(Result.failure(Error("process was not started")))
+                }
+            })
 
             processHandler.startNotify()
         }

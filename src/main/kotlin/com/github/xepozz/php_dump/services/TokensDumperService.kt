@@ -9,6 +9,9 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Service(Service.Level.PROJECT)
 class TokensDumperService(var project: Project) : Disposable, DumperServiceInterface {
@@ -18,7 +21,7 @@ class TokensDumperService(var project: Project) : Disposable, DumperServiceInter
         consoleView?.dispose()
     }
 
-    override fun dump(file: String) {
+    override suspend fun dump(file: String) {
         // language=injectablephp
         val phpSnippet = $$"""
             print_r(
@@ -38,13 +41,18 @@ class TokensDumperService(var project: Project) : Disposable, DumperServiceInter
         """.trimIndent()
 
         consoleView?.clear()
-        PhpCommandExecutor.execute(file, phpSnippet, project, object : ProcessAdapter() {
-            override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                when (outputType) {
-                    ProcessOutputTypes.STDERR -> consoleView?.print(event.text, ConsoleViewContentType.ERROR_OUTPUT)
-                    ProcessOutputTypes.STDOUT -> consoleView?.print(event.text, ConsoleViewContentType.NORMAL_OUTPUT)
+        CoroutineScope(Dispatchers.IO).launch {
+            PhpCommandExecutor.execute(file, phpSnippet, project, object : ProcessAdapter() {
+                override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+                    when (outputType) {
+                        ProcessOutputTypes.STDERR -> consoleView?.print(event.text, ConsoleViewContentType.ERROR_OUTPUT)
+                        ProcessOutputTypes.STDOUT -> consoleView?.print(
+                            event.text,
+                            ConsoleViewContentType.NORMAL_OUTPUT
+                        )
+                    }
                 }
-            }
-        })
+            })
+        }
     }
 }

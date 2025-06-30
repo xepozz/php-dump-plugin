@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import java.awt.GridLayout
 import java.awt.event.ComponentAdapter
@@ -64,6 +65,6 @@ class TokensTerminalPanel(
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         val virtualFile = editor.virtualFile ?: return
 
-        service.dump(virtualFile)
+        runBlocking { service.dump(virtualFile) }
     }
 }

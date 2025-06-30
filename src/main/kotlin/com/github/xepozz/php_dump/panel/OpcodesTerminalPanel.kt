@@ -1,6 +1,6 @@
 package com.github.xepozz.php_dump.panel
 
-import com.github.xepozz.php_dump.actions.RunDumpCommandAction
+import com.github.xepozz.php_dump.actions.RunDumpTokensCommandAction
 import com.github.xepozz.php_dump.services.OpcodesDumperService
 import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.openapi.actionSystem.ActionManager
@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import java.awt.GridLayout
 import java.awt.event.ComponentAdapter
@@ -34,7 +35,7 @@ class OpcodesTerminalPanel(
 
     private fun createToolBar() {
         val actionGroup = DefaultActionGroup()
-        actionGroup.add(RunDumpCommandAction())
+        actionGroup.add(RunDumpTokensCommandAction(service))
         actionGroup.addSeparator()
 //        actionGroup.add(OpenSettingsAction())
 
@@ -64,6 +65,6 @@ class OpcodesTerminalPanel(
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         val virtualFile = editor.virtualFile ?: return
 
-        service.dump(virtualFile.path)
+        runBlocking { service.dump(virtualFile) }
     }
 }

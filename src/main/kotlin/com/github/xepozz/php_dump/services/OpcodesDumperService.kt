@@ -11,7 +11,6 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.php.config.PhpProjectConfigurationFacade
 import com.jetbrains.php.config.interpreters.PhpInterpretersManagerImpl
 import kotlinx.coroutines.CoroutineScope
@@ -20,22 +19,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Service(Service.Level.PROJECT)
-class OpcodesDumperService(var project: Project) : Disposable {
+class OpcodesDumperService(var project: Project) : Disposable, DumperServiceInterface {
     var consoleView: ConsoleView? = null
-
-    companion object {
-        fun dump(file: VirtualFile, project: Project) {
-            val service = project.getService(OpcodesDumperService::class.java)
-
-            service.dump(file.path)
-        }
-    }
 
     override fun dispose() {
         consoleView?.dispose()
     }
 
-    fun dump(file: String) {
+    override suspend fun dump(file: String) {
         val interpretersManager = PhpInterpretersManagerImpl.getInstance(project)
         val interpreter = PhpProjectConfigurationFacade.getInstance(project).interpreter
             ?: interpretersManager.interpreters.firstOrNull() ?: return
@@ -50,11 +41,9 @@ class OpcodesDumperService(var project: Project) : Disposable {
 // playground/test.php \
 // 1>/dev/null
 
+        val interpreterPath = interpreter.pathToPhpExecutable ?: return
         val commandArgs = buildList {
-            interpreter.apply {
-                println("interpreter: $this")
-                add(this.pathToPhpExecutable!!)
-            }
+            add(interpreterPath)
             add("-l")
             add("-ddisplay_errors=0")
             add("-derror_reporting=0")
