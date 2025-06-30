@@ -72,7 +72,7 @@ class TokenTreePanel(private val project: Project) :
 
     fun createToolbar() {
         val actionGroup = DefaultActionGroup().apply {
-            add(RunDumpTokensCommandAction(service))
+            add(RunDumpTokensCommandAction(service, "Dump Tree"))
             addSeparator()
         }
 
@@ -176,7 +176,7 @@ class TokenTreePanel(private val project: Project) :
         return runBlocking as? TokensList ?: result
     }
 
-    override fun refresh(project: Project) {
+    override fun refresh(project: Project, type: RefreshType) {
         refreshData()
     }
 

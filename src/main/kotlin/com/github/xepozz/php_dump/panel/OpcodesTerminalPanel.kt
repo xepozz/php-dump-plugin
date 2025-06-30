@@ -29,9 +29,9 @@ class OpcodesTerminalPanel(
     val viewComponent: JComponent
     val service: OpcodesDumperService
     val state = DebugLevelState.getInstance(project)
+    val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
 
     init {
-        val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
         viewComponent = consoleView.component
 
         service = project.getService(OpcodesDumperService::class.java)
@@ -43,13 +43,36 @@ class OpcodesTerminalPanel(
 
     private fun createToolBar() {
         val actionGroup = DefaultActionGroup().apply {
-            add(RunDumpTokensCommandAction(service))
+            add(RunDumpTokensCommandAction(service, "Dump Opcodes"))
+            add(object : AnAction("Clear", "Clear console", AllIcons.Actions.GC) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    consoleView.clear()
+                }
+            })
+            add(object : AnAction(
+                "Enable Auto Refresh", "Turns on or off auto refresh of panel context",
+                if (state.autoRefresh) AllIcons.Actions.RestartStop else AllIcons.Actions.RerunAutomatically
+            ) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    state.autoRefresh = !state.autoRefresh
+                }
+
+                override fun update(e: AnActionEvent) {
+                    if (state.autoRefresh) {
+                        e.presentation.text = "Disable Auto Refresh"
+                        e.presentation.icon = AllIcons.Actions.RestartStop
+                    } else {
+                        e.presentation.text = "Enable Auto Refresh"
+                        e.presentation.icon = AllIcons.Actions.RerunAutomatically
+                    }
+                }
+            })
             addSeparator()
             add(DefaultActionGroup("Debug Level", true).apply {
                 add(object : AnAction("Before Optimization") {
                     override fun actionPerformed(e: AnActionEvent) {
                         state.debugLevel = 1
-                        refresh(project)
+                        refresh(project, RefreshType.MANUAL)
                     }
 
                     override fun update(e: AnActionEvent) {
@@ -62,7 +85,7 @@ class OpcodesTerminalPanel(
                 add(object : AnAction("After Optimization") {
                     override fun actionPerformed(e: AnActionEvent) {
                         state.debugLevel = 2
-                        refresh(project)
+                        refresh(project, RefreshType.MANUAL)
                     }
 
                     override fun update(e: AnActionEvent) {
@@ -88,7 +111,7 @@ class OpcodesTerminalPanel(
                         .let { file ->
                             state.preloadFile = file?.path
                         }
-                    refresh(project)
+                    refresh(project, RefreshType.MANUAL)
                 }
             })
         }
@@ -115,7 +138,10 @@ class OpcodesTerminalPanel(
         setContent(responsivePanel)
     }
 
-    override fun refresh(project: Project) {
+    override fun refresh(project: Project, type: RefreshType) {
+        if (type == RefreshType.AUTO && !state.autoRefresh) {
+            return
+        }
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         val virtualFile = editor.virtualFile ?: return
 

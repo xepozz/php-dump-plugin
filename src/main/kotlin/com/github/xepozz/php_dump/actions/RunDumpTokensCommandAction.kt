@@ -9,14 +9,15 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import kotlinx.coroutines.runBlocking
 
 class RunDumpTokensCommandAction(
-    val dumpService: DumperServiceInterface
-) : AnAction("Dump Tokens in Terminal", null, AllIcons.Actions.Execute) {
+    val dumpService: DumperServiceInterface,
+    title: String = "Dump Tokens",
+) : AnAction(title, null, AllIcons.Actions.Execute) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        println("project $project")
+//        println("project $project")
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         val file = editor.virtualFile ?: return
-        println("file $file")
+//        println("file $file")
 
         runBlocking { dumpService.dump(file) }
     }

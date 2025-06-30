@@ -1,5 +1,6 @@
 package com.github.xepozz.php_dump.startup
 
+import com.github.xepozz.php_dump.panel.RefreshType
 import com.github.xepozz.php_dump.panel.RefreshablePanel
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
@@ -27,7 +28,7 @@ class ProjectFileEditorListener(val project: Project) : FileEditorManagerListene
             ?.component
             ?.components
             ?.mapNotNull { it as? RefreshablePanel }
-            ?.forEach { it.refresh(project) }
+            ?.forEach { it.refresh(project, RefreshType.AUTO) }
             ?: return
 
     }

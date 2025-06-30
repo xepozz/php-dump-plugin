@@ -61,7 +61,7 @@ class TokensObjectTerminalPanel(
         setContent(responsivePanel)
     }
 
-    override fun refresh(project: Project) {
+    override fun refresh(project: Project, type: RefreshType) {
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         val virtualFile = editor.virtualFile ?: return
 
