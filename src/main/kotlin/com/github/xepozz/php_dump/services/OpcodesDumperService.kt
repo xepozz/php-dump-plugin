@@ -13,14 +13,18 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.jetbrains.php.config.PhpProjectConfigurationFacade
 import com.jetbrains.php.config.interpreters.PhpInterpretersManagerImpl
+import fleet.util.max
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.min
 
 @Service(Service.Level.PROJECT)
 class OpcodesDumperService(var project: Project) : Disposable, DumperServiceInterface {
     var consoleView: ConsoleView? = null
+
+    val state = DebugLevelState.getInstance(project)
 
     override fun dispose() {
         consoleView?.dispose()
@@ -42,6 +46,8 @@ class OpcodesDumperService(var project: Project) : Disposable, DumperServiceInte
 // 1>/dev/null
 
         val interpreterPath = interpreter.pathToPhpExecutable ?: return
+        val debugLevel = max(1, min(2, state.getDebugLevel()))
+
         val commandArgs = buildList {
             add(interpreterPath)
             add("-l")
@@ -50,7 +56,7 @@ class OpcodesDumperService(var project: Project) : Disposable, DumperServiceInte
 
             add("-dopcache.enable_cli=1")
             add("-dopcache.save_comments=1")
-            add("-dopcache.opt_debug_level=0x10000")
+            add("-dopcache.opt_debug_level=0x${debugLevel}0000")
             add("-dopcache.optimization_level=0")
 
             add(file)

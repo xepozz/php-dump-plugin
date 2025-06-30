@@ -1,3 +1,4 @@
 <?php
 
-echo 1;
+$var = 1;
+echo $var;

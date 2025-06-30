@@ -1,13 +1,19 @@
 package com.github.xepozz.php_dump.panel
 
 import com.github.xepozz.php_dump.actions.RunDumpTokensCommandAction
+import com.github.xepozz.php_dump.services.DebugLevelState
 import com.github.xepozz.php_dump.services.OpcodesDumperService
 import com.intellij.execution.filters.TextConsoleBuilderFactory
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import com.intellij.ui.JBColor
+import com.intellij.util.IconUtil
 import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import java.awt.GridLayout
@@ -21,6 +27,7 @@ class OpcodesTerminalPanel(
 ) : SimpleToolWindowPanel(false, false), RefreshablePanel {
     val viewComponent: JComponent
     val service: OpcodesDumperService
+    val state = DebugLevelState.getInstance(project)
 
     init {
         val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
@@ -37,7 +44,34 @@ class OpcodesTerminalPanel(
         val actionGroup = DefaultActionGroup()
         actionGroup.add(RunDumpTokensCommandAction(service))
         actionGroup.addSeparator()
-//        actionGroup.add(OpenSettingsAction())
+        actionGroup.add(DefaultActionGroup("Debug Level", true).apply {
+            add(object : AnAction("Before Optimization") {
+                override fun actionPerformed(e: AnActionEvent) {
+                    state.setDebugLevel(1)
+                    refresh(project)
+                }
+                override fun update(e: AnActionEvent) {
+                    e.presentation.icon = when (state.getDebugLevel()) {
+                        1 -> IconUtil.colorize(AllIcons.General.GreenCheckmark, JBColor.GRAY)
+                        else -> null
+                    }
+                }
+            })
+            add(object : AnAction("After Optimization") {
+                override fun actionPerformed(e: AnActionEvent) {
+                    state.setDebugLevel(2)
+                    refresh(project)
+                }
+
+                override fun update(e: AnActionEvent) {
+                    e.presentation.icon = when (state.getDebugLevel()) {
+                        2 -> IconUtil.colorize(AllIcons.General.GreenCheckmark, JBColor.GRAY)
+                        else -> null
+                    }
+                }
+            })
+            templatePresentation.icon = AllIcons.Actions.ToggleVisibility
+        })
 
         val actionToolbar = ActionManager.getInstance().createActionToolbar("Opcodes Toolbar", actionGroup, false)
         actionToolbar.targetComponent = this
