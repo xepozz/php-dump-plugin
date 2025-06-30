@@ -9,11 +9,12 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.fileChooser.FileChooser
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
-import com.intellij.ui.JBColor
-import com.intellij.util.IconUtil
+import com.jetbrains.php.lang.PhpFileType
 import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import java.awt.GridLayout
@@ -41,37 +42,56 @@ class OpcodesTerminalPanel(
     }
 
     private fun createToolBar() {
-        val actionGroup = DefaultActionGroup()
-        actionGroup.add(RunDumpTokensCommandAction(service))
-        actionGroup.addSeparator()
-        actionGroup.add(DefaultActionGroup("Debug Level", true).apply {
-            add(object : AnAction("Before Optimization") {
-                override fun actionPerformed(e: AnActionEvent) {
-                    state.setDebugLevel(1)
-                    refresh(project)
-                }
-                override fun update(e: AnActionEvent) {
-                    e.presentation.icon = when (state.getDebugLevel()) {
-                        1 -> IconUtil.colorize(AllIcons.General.GreenCheckmark, JBColor.GRAY)
-                        else -> null
+        val actionGroup = DefaultActionGroup().apply {
+            add(RunDumpTokensCommandAction(service))
+            addSeparator()
+            add(DefaultActionGroup("Debug Level", true).apply {
+                add(object : AnAction("Before Optimization") {
+                    override fun actionPerformed(e: AnActionEvent) {
+                        state.debugLevel = 1
+                        refresh(project)
                     }
-                }
-            })
-            add(object : AnAction("After Optimization") {
-                override fun actionPerformed(e: AnActionEvent) {
-                    state.setDebugLevel(2)
-                    refresh(project)
-                }
 
-                override fun update(e: AnActionEvent) {
-                    e.presentation.icon = when (state.getDebugLevel()) {
-                        2 -> IconUtil.colorize(AllIcons.General.GreenCheckmark, JBColor.GRAY)
-                        else -> null
+                    override fun update(e: AnActionEvent) {
+                        e.presentation.icon = when (state.debugLevel) {
+                            1 -> AllIcons.Actions.Checked
+                            else -> null
+                        }
                     }
+                })
+                add(object : AnAction("After Optimization") {
+                    override fun actionPerformed(e: AnActionEvent) {
+                        state.debugLevel = 2
+                        refresh(project)
+                    }
+
+                    override fun update(e: AnActionEvent) {
+                        e.presentation.icon = when (state.debugLevel) {
+                            2 -> AllIcons.Actions.Checked
+                            else -> null
+                        }
+                    }
+                })
+                templatePresentation.icon = AllIcons.Actions.ToggleVisibility
+            })
+
+            add(object : AnAction("Select Preload File", "Choose a file", AllIcons.Actions.MenuOpen) {
+                override fun actionPerformed(e: AnActionEvent) {
+
+                    val fileChooserDescriptor =
+                        FileChooserDescriptorFactory.createSingleFileDescriptor(PhpFileType.INSTANCE)
+                            .withTitle("Select Preload File")
+                            .withDescription("Choose a preload.php file")
+
+                    FileChooser
+                        .chooseFile(fileChooserDescriptor, project, null)
+                        .let { file ->
+                            state.preloadFile = file?.path
+                        }
+                    refresh(project)
                 }
             })
-            templatePresentation.icon = AllIcons.Actions.ToggleVisibility
-        })
+        }
 
         val actionToolbar = ActionManager.getInstance().createActionToolbar("Opcodes Toolbar", actionGroup, false)
         actionToolbar.targetComponent = this

@@ -13,7 +13,8 @@ import com.intellij.openapi.project.Project
 )
 class DebugLevelState : PersistentStateComponent<DebugLevelState.State> {
     data class State(
-        var debugLevel: Int = 1
+        var debugLevel: Int = 1,
+        var preloadFile: String? = null,
     )
 
     private var myState = State()
@@ -26,13 +27,8 @@ class DebugLevelState : PersistentStateComponent<DebugLevelState.State> {
         myState = state
     }
 
-    fun getDebugLevel(): Int {
-        return myState.debugLevel
-    }
-
-    fun setDebugLevel(level: Int) {
-        myState.debugLevel = level
-    }
+    var debugLevel: Int by state::debugLevel
+    var preloadFile: String? by state::preloadFile
 
     companion object {
         fun getInstance(project: Project): DebugLevelState {

@@ -46,7 +46,8 @@ class OpcodesDumperService(var project: Project) : Disposable, DumperServiceInte
 // 1>/dev/null
 
         val interpreterPath = interpreter.pathToPhpExecutable ?: return
-        val debugLevel = max(1, min(2, state.getDebugLevel()))
+        val debugLevel = max(1, min(2, state.debugLevel))
+        val preloadFile = state.preloadFile
 
         val commandArgs = buildList {
             add(interpreterPath)
@@ -58,6 +59,9 @@ class OpcodesDumperService(var project: Project) : Disposable, DumperServiceInte
             add("-dopcache.save_comments=1")
             add("-dopcache.opt_debug_level=0x${debugLevel}0000")
             add("-dopcache.optimization_level=0")
+            if (preloadFile != null) {
+                add("-dopcache.preload=${preloadFile}")
+            }
 
             add(file)
         }
@@ -71,6 +75,7 @@ class OpcodesDumperService(var project: Project) : Disposable, DumperServiceInte
         val command = GeneralCommandLine(commandArgs)
         command.withRedirectErrorStream(false)
 
+//        println("running command ${command.commandLineString}")
         val processHandler = KillableColoredProcessHandler.Silent(command)
         processHandler.setShouldKillProcessSoftly(false)
         processHandler.setShouldDestroyProcessRecursively(true)
