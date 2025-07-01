@@ -10,7 +10,13 @@ import com.jetbrains.php.config.interpreters.PhpInterpretersManagerImpl
 import kotlin.coroutines.suspendCoroutine
 
 object PhpCommandExecutor {
-    suspend fun execute(file: String, phpSnippet: String, project: Project, processListener: ProcessAdapter) {
+    suspend fun execute(
+        file: String,
+        phpSnippet: String,
+        project: Project,
+        processListener: ProcessAdapter,
+        processArguments: List<String> = emptyList()
+    ) {
         val interpretersManager = PhpInterpretersManagerImpl.getInstance(project)
         val interpreter = PhpProjectConfigurationFacade.getInstance(project).interpreter
             ?: interpretersManager.interpreters.firstOrNull() ?: return
@@ -18,6 +24,7 @@ object PhpCommandExecutor {
         val interpreterPath = interpreter.pathToPhpExecutable ?: return
         val commandArgs = buildList {
             add(interpreterPath)
+            addAll(processArguments)
             add("-r")
             add(phpSnippet)
 

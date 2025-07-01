@@ -1,5 +1,6 @@
 package com.github.xepozz.php_dump
 
+import com.github.xepozz.php_dump.panel.OpcacheSettingsPanel
 import com.github.xepozz.php_dump.panel.OpcodesTerminalPanel
 import com.github.xepozz.php_dump.panel.TokenTreePanel
 import com.github.xepozz.php_dump.panel.TokensObjectTerminalPanel
@@ -16,12 +17,21 @@ open class CompositeWindowFactory : ToolWindowFactory, DumbAware {
         val contentManager = toolWindow.contentManager
 
         val opcodesTerminalLayout = OpcodesTerminalPanel(project)
+        val opcodesSettingsLayout = OpcacheSettingsPanel(project)
         val tokensTerminalLayout = TokensTerminalPanel(project)
         val tokensObjectTerminalLayout = TokensObjectTerminalPanel(project)
         val tokenTreeLayout = TokenTreePanel(project)
 
         contentFactory.apply {
-            this.createContent(opcodesTerminalLayout, "Opcodes", false).apply {
+            this.createContent(opcodesTerminalLayout, "OpCodes", false).apply {
+                contentManager.addContent(
+                    this.apply {
+                        this.isPinnable = true
+                        this.isCloseable = false
+                    }
+                )
+            }
+            this.createContent(opcodesSettingsLayout, "OpCache Settings", false).apply {
                 contentManager.addContent(
                     this.apply {
                         this.isPinnable = true

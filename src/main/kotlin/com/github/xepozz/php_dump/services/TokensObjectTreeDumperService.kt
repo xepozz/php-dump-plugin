@@ -44,7 +44,7 @@ class TokensObjectTreeDumperService(var project: Project) : DumperServiceInterfa
 
 
             val jsonString = output.toString()
-//            println("jsonString: $jsonString")
+            println("jsonString: $jsonString")
 
             val tree = TokenParser.parseTokens(jsonString)
 //            println("result tree: $tree")
