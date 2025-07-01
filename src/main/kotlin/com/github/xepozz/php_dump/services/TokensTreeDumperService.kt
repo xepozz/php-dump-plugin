@@ -1,5 +1,6 @@
 package com.github.xepozz.php_dump.services
 
+import com.github.xepozz.php_dump.command.PhpCommandExecutor
 import com.github.xepozz.php_dump.stubs.token_object.TokenParser
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
@@ -11,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Service(Service.Level.PROJECT)
-class TokensObjectTreeDumperService(var project: Project) : DumperServiceInterface {
+class TokensTreeDumperService(var project: Project) : DumperServiceInterface {
     override suspend fun dump(file: String): Any {
         // language=injectablephp
         val phpSnippet = $$"""
@@ -44,7 +45,7 @@ class TokensObjectTreeDumperService(var project: Project) : DumperServiceInterfa
 
 
             val jsonString = output.toString()
-            println("jsonString: $jsonString")
+//            println("jsonString: $jsonString")
 
             val tree = TokenParser.parseTokens(jsonString)
 //            println("result tree: $tree")

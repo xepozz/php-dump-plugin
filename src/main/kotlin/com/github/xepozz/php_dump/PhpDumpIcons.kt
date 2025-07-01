@@ -11,4 +11,8 @@ object PhpDumpIcons {
     val RERUN_AUTOMATICALLY = IconLoader.getIcon("/icons/rerunAutomatically/rerunAutomatically.svg", PhpDumpIcons::class.java)
     @JvmStatic
     val RESTART_STOP = IconLoader.getIcon("/icons/restartStop/restartStop.svg", PhpDumpIcons::class.java)
+    @JvmStatic
+    val SHOW_AS_TREE = IconLoader.getIcon("/icons/showAsTree/showAsTree.svg", PhpDumpIcons::class.java)
+    @JvmStatic
+    val TEXT = IconLoader.getIcon("/icons/text/text.svg", PhpDumpIcons::class.java)
 }

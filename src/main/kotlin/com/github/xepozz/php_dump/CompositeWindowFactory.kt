@@ -3,7 +3,6 @@ package com.github.xepozz.php_dump
 import com.github.xepozz.php_dump.panel.OpcacheSettingsPanel
 import com.github.xepozz.php_dump.panel.OpcodesTerminalPanel
 import com.github.xepozz.php_dump.panel.TokenTreePanel
-import com.github.xepozz.php_dump.panel.TokensObjectTerminalPanel
 import com.github.xepozz.php_dump.panel.TokensTerminalPanel
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -19,11 +18,10 @@ open class CompositeWindowFactory : ToolWindowFactory, DumbAware {
         val opcodesTerminalLayout = OpcodesTerminalPanel(project)
         val opcodesSettingsLayout = OpcacheSettingsPanel(project)
         val tokensTerminalLayout = TokensTerminalPanel(project)
-        val tokensObjectTerminalLayout = TokensObjectTerminalPanel(project)
         val tokenTreeLayout = TokenTreePanel(project)
 
         contentFactory.apply {
-            this.createContent(opcodesTerminalLayout, "OpCodes", false).apply {
+            this.createContent(opcodesTerminalLayout, "Opcodes", false).apply {
                 contentManager.addContent(
                     this.apply {
                         this.isPinnable = true
@@ -31,7 +29,7 @@ open class CompositeWindowFactory : ToolWindowFactory, DumbAware {
                     }
                 )
             }
-            this.createContent(opcodesSettingsLayout, "OpCache Settings", false).apply {
+            this.createContent(opcodesSettingsLayout, "Opcache", false).apply {
                 contentManager.addContent(
                     this.apply {
                         this.isPinnable = true
@@ -39,7 +37,7 @@ open class CompositeWindowFactory : ToolWindowFactory, DumbAware {
                     }
                 )
             }
-            this.createContent(tokensTerminalLayout, "Tokens", false).apply {
+            this.createContent(tokensTerminalLayout, "Plain Tokens", false).apply {
                 contentManager.addContent(
                     this.apply {
                         this.isPinnable = true
@@ -47,15 +45,7 @@ open class CompositeWindowFactory : ToolWindowFactory, DumbAware {
                     }
                 )
             }
-            this.createContent(tokensObjectTerminalLayout, "Tokens Object", false).apply {
-                contentManager.addContent(
-                    this.apply {
-                        this.isPinnable = true
-                        this.isCloseable = false
-                    }
-                )
-            }
-            this.createContent(tokenTreeLayout.component, "Tree panel", false).apply {
+            this.createContent(tokenTreeLayout.component, "Tokens Tree", false).apply {
                 contentManager.addContent(
                     this.apply {
                         this.isPinnable = true

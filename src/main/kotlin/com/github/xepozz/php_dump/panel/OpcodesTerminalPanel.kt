@@ -1,11 +1,13 @@
 package com.github.xepozz.php_dump.panel
 
 import com.github.xepozz.php_dump.PhpDumpIcons
+import com.github.xepozz.php_dump.actions.ClearConsoleViewAction
 import com.github.xepozz.php_dump.actions.RunDumpTokensCommandAction
-import com.github.xepozz.php_dump.services.DebugLevelState
+import com.github.xepozz.php_dump.configuration.PhpDumpSettingsService
 import com.github.xepozz.php_dump.services.OpcodesDumperService
 import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -26,10 +28,10 @@ import javax.swing.JPanel
 
 class OpcodesTerminalPanel(
     val project: Project,
-) : SimpleToolWindowPanel(false, false), RefreshablePanel {
+) : SimpleToolWindowPanel(false, false), RefreshablePanel, Disposable {
     val viewComponent: JComponent
     val service: OpcodesDumperService
-    val state = DebugLevelState.getInstance(project)
+    val state = PhpDumpSettingsService.getInstance(project)
     val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
 
     init {
@@ -45,11 +47,7 @@ class OpcodesTerminalPanel(
     private fun createToolBar() {
         val actionGroup = DefaultActionGroup().apply {
             add(RunDumpTokensCommandAction(service, "Dump Opcodes"))
-            add(object : AnAction("Clear", "Clear console", AllIcons.Actions.GC) {
-                override fun actionPerformed(e: AnActionEvent) {
-                    consoleView.clear()
-                }
-            })
+            add(ClearConsoleViewAction(consoleView))
             add(object : AnAction(
                 "Enable Auto Refresh", "Turns on or off auto refresh of panel context",
                 if (state.autoRefresh) PhpDumpIcons.RESTART_STOP else PhpDumpIcons.RERUN_AUTOMATICALLY
@@ -148,4 +146,8 @@ class OpcodesTerminalPanel(
 
         runBlocking { service.dump(virtualFile) }
     }
+
+    override fun dispose() {
+    }
 }
+

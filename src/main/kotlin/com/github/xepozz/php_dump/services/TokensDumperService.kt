@@ -1,5 +1,7 @@
 package com.github.xepozz.php_dump.services
 
+import com.github.xepozz.php_dump.command.PhpCommandExecutor
+import com.github.xepozz.php_dump.configuration.PhpDumpSettingsService
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessOutputTypes
@@ -17,13 +19,33 @@ import kotlinx.coroutines.launch
 class TokensDumperService(var project: Project) : Disposable, DumperServiceInterface {
     var consoleView: ConsoleView? = null
 
+    val state = PhpDumpSettingsService.getInstance(project)
+
     override fun dispose() {
         consoleView?.dispose()
     }
 
     override suspend fun dump(file: String) {
-        // language=injectablephp
-        val phpSnippet = $$"""
+        val phpSnippet = if (state.tokensObject) {
+            // language=injectablephp
+            $$"""
+            print_r(
+                array_map(
+                    function (PhpToken $token) {
+                        return [
+                            'line' => $token->line,
+                            'pos' => $token->pos,
+                            'name' => $token->getTokenName(),
+                            'value' => $token->text,
+                        ];
+                    },
+                    \PhpToken::tokenize(file_get_contents($argv[1])),
+                )
+            );
+            """.trimIndent()
+        } else {
+            // language=injectablephp
+            $$"""
             print_r(
                 array_map(
                     function ($token) {
@@ -39,6 +61,7 @@ class TokensDumperService(var project: Project) : Disposable, DumperServiceInter
                 )
             );
         """.trimIndent()
+        }
 
         consoleView?.clear()
         CoroutineScope(Dispatchers.IO).launch {

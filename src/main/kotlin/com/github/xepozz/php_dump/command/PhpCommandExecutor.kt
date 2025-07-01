@@ -1,4 +1,4 @@
-package com.github.xepozz.php_dump.services
+package com.github.xepozz.php_dump.command
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.KillableColoredProcessHandler
@@ -39,7 +39,7 @@ object PhpCommandExecutor {
             val command = GeneralCommandLine(commandArgs)
             command.withRedirectErrorStream(false)
 
-            println("running command ${command.commandLineString}")
+//            println("running command ${command.commandLineString}")
             val processHandler = KillableColoredProcessHandler.Silent(command)
             processHandler.setShouldKillProcessSoftly(false)
             processHandler.setShouldDestroyProcessRecursively(true)

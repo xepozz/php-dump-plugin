@@ -1,5 +1,6 @@
 package com.github.xepozz.php_dump.services
 
+import com.github.xepozz.php_dump.configuration.PhpDumpSettingsService
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.process.ProcessAdapter
@@ -22,7 +23,7 @@ import kotlinx.coroutines.withContext
 class OpcodesDumperService(var project: Project) : Disposable, DumperServiceInterface {
     var consoleView: ConsoleView? = null
 
-    val state = DebugLevelState.getInstance(project)
+    val state = PhpDumpSettingsService.getInstance(project)
 
     override fun dispose() {
         consoleView?.dispose()

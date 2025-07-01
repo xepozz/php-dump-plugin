@@ -1,5 +1,6 @@
 package com.github.xepozz.php_dump.services
 
+import com.github.xepozz.php_dump.command.PhpCommandExecutor
 import com.github.xepozz.php_dump.stubs.any_tree.AnyNodeList
 import com.github.xepozz.php_dump.stubs.any_tree.AnyNodeParser
 import com.intellij.execution.process.ProcessAdapter

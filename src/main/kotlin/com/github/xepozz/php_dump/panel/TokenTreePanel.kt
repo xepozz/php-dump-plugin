@@ -1,8 +1,10 @@
 package com.github.xepozz.php_dump.panel
 
-import com.github.xepozz.php_dump.actions.RunDumpTokensCommandAction
+import com.github.xepozz.php_dump.actions.CollapseTreeAction
+import com.github.xepozz.php_dump.actions.ExpandTreeAction
+import com.github.xepozz.php_dump.actions.RefreshAction
 import com.github.xepozz.php_dump.nonBlocking
-import com.github.xepozz.php_dump.services.TokensObjectTreeDumperService
+import com.github.xepozz.php_dump.services.TokensTreeDumperService
 import com.github.xepozz.php_dump.stubs.token_object.TokensList
 import com.github.xepozz.php_dump.tree.RootNode
 import com.github.xepozz.php_dump.tree.TokenNode
@@ -28,8 +30,8 @@ import com.intellij.ui.tree.StructureTreeModel
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.tree.TreeUtil
 import kotlinx.coroutines.runBlocking
-import org.jdesktop.swingx.VerticalLayout
 import java.awt.BorderLayout
+import java.awt.GridLayout
 import javax.swing.JPanel
 import javax.swing.JProgressBar
 import javax.swing.SwingUtilities
@@ -56,7 +58,7 @@ class TokenTreePanel(private val project: Project) :
                 tokenNode?.node?.value
             }, true)
     }
-    val service: TokensObjectTreeDumperService = project.getService(TokensObjectTreeDumperService::class.java)
+    val service: TokensTreeDumperService = project.getService(TokensTreeDumperService::class.java)
 
 
     init {
@@ -72,25 +74,17 @@ class TokenTreePanel(private val project: Project) :
 
     fun createToolbar() {
         val actionGroup = DefaultActionGroup().apply {
-            add(RunDumpTokensCommandAction(service, "Dump Tree"))
+            add(RefreshAction { refreshData() })
             addSeparator()
+            add(ExpandTreeAction(tree))
+            add(CollapseTreeAction(tree))
         }
 
         val actionToolbar = ActionManager.getInstance().createActionToolbar("Tree Toolbar", actionGroup, false)
         actionToolbar.targetComponent = this
 
-        val toolBarPanel = JPanel(VerticalLayout()).apply {
-            add(
-                JPanel(VerticalLayout()).apply {
-                    add(createRefreshButton { refreshData() })
-                    add(createExpandsAll(tree))
-                    add(createCollapseAll(tree))
-                }
-            )
-
-            add(actionToolbar.component)
-        }
-//        searchTextField.addDocumentListener(this)
+        val toolBarPanel = JPanel(GridLayout())
+        toolBarPanel.add(actionToolbar.component)
 
         toolbar = toolBarPanel
     }
@@ -98,7 +92,7 @@ class TokenTreePanel(private val project: Project) :
     private fun createContent() {
         val responsivePanel = JPanel(BorderLayout())
         responsivePanel.add(progressBar, BorderLayout.NORTH)
-        responsivePanel.add(JBScrollPane(tree))
+        responsivePanel.add(JBScrollPane(tree), BorderLayout.CENTER)
 
         setContent(responsivePanel)
     }
