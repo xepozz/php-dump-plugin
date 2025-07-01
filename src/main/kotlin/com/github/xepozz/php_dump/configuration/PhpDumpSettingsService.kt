@@ -14,17 +14,21 @@ import com.intellij.openapi.project.Project
 )
 class PhpDumpSettingsService : SimplePersistentStateComponent<PhpDumpSettingsService.State>(State()) {
     class State : BaseState() {
-        var debugLevel: Int by property(1)
+        var debugLevel: String? by string(PhpOpcacheDebugLevel.BEFORE_OPTIMIZATION.value)
         var preloadFile: String? by string(null)
         var autoRefresh: Boolean by property(true)
         var tokensObject: Boolean by property(true)
     }
 
-    var debugLevel: Int by state::debugLevel
+    var debugLevel: PhpOpcacheDebugLevel
+        get() = PhpOpcacheDebugLevel.entries.firstOrNull { it.value == state.debugLevel } ?: PhpOpcacheDebugLevel.BEFORE_OPTIMIZATION
+        set(value) {
+            state.debugLevel = value.value
+        }
     var preloadFile: String? by state::preloadFile
     var autoRefresh: Boolean by state::autoRefresh
 
-    var tokensObject: Boolean by state::autoRefresh
+    var tokensObject: Boolean by state::tokensObject
 
     companion object {
         fun getInstance(project: Project): PhpDumpSettingsService {

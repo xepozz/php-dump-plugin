@@ -66,7 +66,7 @@ class OpcacheSettingsPanel(private val project: Project) :
 
     fun createToolbar() {
         val actionGroup = DefaultActionGroup().apply {
-            add(RefreshAction { refreshData() })
+            add(RefreshAction { refresh(project, RefreshType.MANUAL) })
             addSeparator()
             add(ExpandTreeAction(tree))
             add(CollapseTreeAction(tree))
@@ -118,10 +118,7 @@ class OpcacheSettingsPanel(private val project: Project) :
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return result
         val virtualFile = editor.virtualFile ?: return result
 
-        val runBlocking = runBlocking { service.dump(virtualFile) }
-        println("result is $runBlocking")
-
-        return runBlocking as? AnyNodeList ?: result
+        return runBlocking { service.dump(virtualFile) } as? AnyNodeList ?: result
     }
 
     override fun refresh(project: Project, type: RefreshType) {

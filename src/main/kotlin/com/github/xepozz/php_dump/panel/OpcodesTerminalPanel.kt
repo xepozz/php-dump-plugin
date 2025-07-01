@@ -2,10 +2,12 @@ package com.github.xepozz.php_dump.panel
 
 import com.github.xepozz.php_dump.PhpDumpIcons
 import com.github.xepozz.php_dump.actions.ClearConsoleViewAction
-import com.github.xepozz.php_dump.actions.RunDumpTokensCommandAction
+import com.github.xepozz.php_dump.actions.RefreshAction
 import com.github.xepozz.php_dump.configuration.PhpDumpSettingsService
+import com.github.xepozz.php_dump.configuration.PhpOpcacheDebugLevel
 import com.github.xepozz.php_dump.services.OpcodesDumperService
 import com.intellij.execution.filters.TextConsoleBuilderFactory
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
@@ -30,15 +32,12 @@ class OpcodesTerminalPanel(
     val project: Project,
 ) : SimpleToolWindowPanel(false, false), RefreshablePanel, Disposable {
     val viewComponent: JComponent
-    val service: OpcodesDumperService
+    val service: OpcodesDumperService = project.getService(OpcodesDumperService::class.java)
     val state = PhpDumpSettingsService.getInstance(project)
     val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
 
     init {
         viewComponent = consoleView.component
-
-        service = project.getService(OpcodesDumperService::class.java)
-        service.consoleView = consoleView
 
         createToolBar()
         createContent()
@@ -46,7 +45,7 @@ class OpcodesTerminalPanel(
 
     private fun createToolBar() {
         val actionGroup = DefaultActionGroup().apply {
-            add(RunDumpTokensCommandAction(service, "Dump Opcodes"))
+            add(RefreshAction { refresh(project, RefreshType.MANUAL) })
             add(ClearConsoleViewAction(consoleView))
             add(object : AnAction(
                 "Enable Auto Refresh", "Turns on or off auto refresh of panel context",
@@ -68,32 +67,29 @@ class OpcodesTerminalPanel(
             })
             addSeparator()
             add(DefaultActionGroup("Debug Level", true).apply {
-                add(object : AnAction("Before Optimization") {
-                    override fun actionPerformed(e: AnActionEvent) {
-                        state.debugLevel = 1
-                        refresh(project, RefreshType.MANUAL)
-                    }
+                mapOf(
+                    PhpOpcacheDebugLevel.BEFORE_OPTIMIZATION to "Before Optimization (0x10000)",
+                    PhpOpcacheDebugLevel.AFTER_OPTIMIZATION to "After Optimization (0x20000)",
+                    PhpOpcacheDebugLevel.CONTEXT_FREE to "Context Free (0x40000)",
+                    PhpOpcacheDebugLevel.SSA_FORM to "Static Single Assignment Form (0x200000)",
+                )
+                    .map { (level, label) ->
+                        object : AnAction(label) {
+                            override fun actionPerformed(e: AnActionEvent) {
+                                state.debugLevel = level
+                                refresh(project, RefreshType.MANUAL)
+                            }
 
-                    override fun update(e: AnActionEvent) {
-                        e.presentation.icon = when (state.debugLevel) {
-                            1 -> AllIcons.Actions.Checked
-                            else -> null
+                            override fun update(e: AnActionEvent) {
+                                e.presentation.icon = when (state.debugLevel) {
+                                    level -> AllIcons.Actions.Checked
+                                    else -> null
+                                }
+                            }
                         }
                     }
-                })
-                add(object : AnAction("After Optimization") {
-                    override fun actionPerformed(e: AnActionEvent) {
-                        state.debugLevel = 2
-                        refresh(project, RefreshType.MANUAL)
-                    }
+                    .also { addAll(it) }
 
-                    override fun update(e: AnActionEvent) {
-                        e.presentation.icon = when (state.debugLevel) {
-                            2 -> AllIcons.Actions.Checked
-                            else -> null
-                        }
-                    }
-                })
                 templatePresentation.icon = AllIcons.Actions.ToggleVisibility
             })
 
@@ -144,7 +140,10 @@ class OpcodesTerminalPanel(
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         val virtualFile = editor.virtualFile ?: return
 
-        runBlocking { service.dump(virtualFile) }
+        val result = runBlocking { service.dump(virtualFile) }
+
+        consoleView.clear()
+        consoleView.print(result as? String ?: "No output", ConsoleViewContentType.NORMAL_OUTPUT)
     }
 
     override fun dispose() {

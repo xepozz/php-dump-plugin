@@ -19,7 +19,6 @@ class ProjectFileEditorListener(val project: Project) : FileEditorManagerListene
 
     override fun selectionChanged(event: FileEditorManagerEvent) {
         super.selectionChanged(event)
-        println("selection changed $event")
 
         val toolWindowManager = ToolWindowManager.getInstance(project)
         val toolWindow = toolWindowManager.getToolWindow("PHP Dump")

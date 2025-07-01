@@ -2,10 +2,11 @@ package com.github.xepozz.php_dump.panel
 
 import com.github.xepozz.php_dump.PhpDumpIcons
 import com.github.xepozz.php_dump.actions.ClearConsoleViewAction
-import com.github.xepozz.php_dump.actions.RunDumpTokensCommandAction
+import com.github.xepozz.php_dump.actions.RefreshAction
 import com.github.xepozz.php_dump.configuration.PhpDumpSettingsService
 import com.github.xepozz.php_dump.services.TokensDumperService
 import com.intellij.execution.filters.TextConsoleBuilderFactory
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnAction
@@ -27,14 +28,11 @@ class TokensTerminalPanel(
 ) : SimpleToolWindowPanel(false, false), RefreshablePanel {
     var viewComponent: JComponent
     val state = PhpDumpSettingsService.getInstance(project)
-    var service: TokensDumperService
+    var service: TokensDumperService = project.getService(TokensDumperService::class.java)
     val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
 
     init {
         viewComponent = consoleView.component
-
-        service = project.getService(TokensDumperService::class.java)
-        service.consoleView = consoleView
 
         createToolBar()
         createContent()
@@ -42,7 +40,7 @@ class TokensTerminalPanel(
 
     private fun createToolBar() {
         val actionGroup = DefaultActionGroup().apply {
-            add(RunDumpTokensCommandAction(service))
+            add(RefreshAction { refresh(project, RefreshType.MANUAL) })
             add(ClearConsoleViewAction(consoleView))
             addSeparator()
             add(object : AnAction(
@@ -66,7 +64,8 @@ class TokensTerminalPanel(
             })
         }
 
-        val actionToolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.TOOLWINDOW_TOOLBAR_BAR, actionGroup, false)
+        val actionToolbar =
+            ActionManager.getInstance().createActionToolbar(ActionPlaces.TOOLWINDOW_TOOLBAR_BAR, actionGroup, false)
         actionToolbar.targetComponent = this
 
         val toolBarPanel = JPanel(GridLayout())
@@ -92,6 +91,9 @@ class TokensTerminalPanel(
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         val virtualFile = editor.virtualFile ?: return
 
-        runBlocking { service.dump(virtualFile) }
+        val result = runBlocking { service.dump(virtualFile) }
+
+        consoleView.clear()
+        consoleView.print(result as? String ?: "No output", ConsoleViewContentType.NORMAL_OUTPUT)
     }
 }

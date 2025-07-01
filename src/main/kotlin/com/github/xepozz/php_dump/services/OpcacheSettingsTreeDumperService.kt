@@ -47,20 +47,14 @@ class OpcacheSettingsTreeDumperService(var project: Project) : DumperServiceInte
         return withContext(Dispatchers.IO) {
             val output = StringBuilder()
 
-            PhpCommandExecutor.execute(
-                file,
-                phpSnippet,
-                project,
-                object : ProcessAdapter() {
-                    override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                        when (outputType) {
-                            ProcessOutputTypes.STDERR -> output.append(event.text)
-                            ProcessOutputTypes.STDOUT -> output.append(event.text)
-                        }
+            PhpCommandExecutor.execute(file, phpSnippet, project, object : ProcessAdapter() {
+                override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+                    when (outputType) {
+                        ProcessOutputTypes.STDERR -> output.append(event.text)
+                        ProcessOutputTypes.STDOUT -> output.append(event.text)
                     }
-                },
-                listOf("-dopcache.enable_cli=1"),
-            )
+                }
+            }, listOf("-dopcache.enable_cli=1"))
 
 
             val jsonString = output.toString()

@@ -1,54 +1,31 @@
 package com.github.xepozz.php_dump.services
 
+import com.github.xepozz.php_dump.command.PhpCommandExecutor
 import com.github.xepozz.php_dump.configuration.PhpDumpSettingsService
 import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessOutputTypes
-import com.intellij.execution.ui.ConsoleView
-import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.jetbrains.php.config.PhpProjectConfigurationFacade
 import com.jetbrains.php.config.interpreters.PhpInterpretersManagerImpl
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Service(Service.Level.PROJECT)
-class OpcodesDumperService(var project: Project) : Disposable, DumperServiceInterface {
-    var consoleView: ConsoleView? = null
-
+class OpcodesDumperService(var project: Project) : DumperServiceInterface {
     val state = PhpDumpSettingsService.getInstance(project)
-
-    override fun dispose() {
-        consoleView?.dispose()
-    }
-
-    override suspend fun dump(file: String) {
+    override suspend fun dump(file: String): Any? {
         val interpretersManager = PhpInterpretersManagerImpl.getInstance(project)
         val interpreter = PhpProjectConfigurationFacade.getInstance(project).interpreter
-            ?: interpretersManager.interpreters.firstOrNull() ?: return
+            ?: interpretersManager.interpreters.firstOrNull() ?: return null
 
-//php -l \
-// -ddisplay_errors=0 \
-// -derror_reporting=0 \
-// -dopcache.enable_cli=1 \
-// -dopcache.save_comments=1 \
-// -dopcache.opt_debug_level=0x10000 \
-// -dopcache.optimization_level=0 \
-// playground/test.php \
-// 1>/dev/null
-
-        val interpreterPath = interpreter.pathToPhpExecutable ?: return
-        val debugLevel = maxOf(1, minOf(2, state.debugLevel))
+        val interpreterPath = interpreter.pathToPhpExecutable ?: return null
+        val debugLevel = state.debugLevel.value
         val preloadFile = state.preloadFile
-
-        val commandArgs = buildList {
+        val command = GeneralCommandLine(buildList {
             add(interpreterPath)
             add("-l")
             add("-ddisplay_errors=0")
@@ -56,40 +33,37 @@ class OpcodesDumperService(var project: Project) : Disposable, DumperServiceInte
 
             add("-dopcache.enable_cli=1")
             add("-dopcache.save_comments=1")
-            add("-dopcache.opt_debug_level=0x${debugLevel}0000")
-            add("-dopcache.optimization_level=0")
+            add("-dopcache.opt_debug_level=${debugLevel}")
             if (preloadFile != null) {
                 add("-dopcache.preload=${preloadFile}")
             }
 
+            add("1>/dev/null")
             add(file)
-        }
+        }).commandLineString
 
-        CoroutineScope(Dispatchers.IO).launch {
-            executeCommand(commandArgs)
-        }
-    }
 
-    private suspend fun executeCommand(commandArgs: List<String>) = withContext(Dispatchers.IO) {
-        val command = GeneralCommandLine(commandArgs)
-        command.withRedirectErrorStream(false)
 
-//        println("running command ${command.commandLineString}")
-        val processHandler = KillableColoredProcessHandler.Silent(command)
-        processHandler.setShouldKillProcessSoftly(false)
-        processHandler.setShouldDestroyProcessRecursively(true)
-        processHandler.addProcessListener(object : ProcessAdapter() {
-            override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                if (outputType == ProcessOutputTypes.STDERR) {
-                    consoleView?.print(event.text, ConsoleViewContentType.NORMAL_OUTPUT)
+        // language=injectablephp
+        val phpSnippet = $$"""
+        opcache_compile_file($argv[1]);
+        passthru('$$command');
+        """.trimIndent()
+
+        return withContext(Dispatchers.IO) {
+            val output = StringBuilder()
+
+            PhpCommandExecutor.execute(file, phpSnippet, project, object : ProcessAdapter() {
+                override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+                    when (outputType) {
+                        ProcessOutputTypes.STDERR -> output.append(event.text)
+                        ProcessOutputTypes.STDOUT -> output.append(event.text)
+                    }
                 }
-            }
-        })
+            }, listOf("-dopcache.enable_cli=1"))
 
-        consoleView?.clear()
-//        consoleView?.attachToProcess(processHandler)
-//        consoleView?.requestScrollingToEnd()
 
-        processHandler.startNotify()
+            return@withContext output.toString()
+        }
     }
 }
