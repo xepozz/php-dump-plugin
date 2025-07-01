@@ -1,5 +1,6 @@
 package com.github.xepozz.php_dump.panel
 
+import com.github.xepozz.php_dump.PhpDumpIcons
 import com.github.xepozz.php_dump.actions.RunDumpTokensCommandAction
 import com.github.xepozz.php_dump.services.DebugLevelState
 import com.github.xepozz.php_dump.services.OpcodesDumperService
@@ -51,7 +52,7 @@ class OpcodesTerminalPanel(
             })
             add(object : AnAction(
                 "Enable Auto Refresh", "Turns on or off auto refresh of panel context",
-                if (state.autoRefresh) AllIcons.Actions.RestartStop else AllIcons.Actions.RerunAutomatically
+                if (state.autoRefresh) PhpDumpIcons.RESTART_STOP else PhpDumpIcons.RERUN_AUTOMATICALLY
             ) {
                 override fun actionPerformed(e: AnActionEvent) {
                     state.autoRefresh = !state.autoRefresh
@@ -60,10 +61,10 @@ class OpcodesTerminalPanel(
                 override fun update(e: AnActionEvent) {
                     if (state.autoRefresh) {
                         e.presentation.text = "Disable Auto Refresh"
-                        e.presentation.icon = AllIcons.Actions.RestartStop
+                        e.presentation.icon = PhpDumpIcons.RESTART_STOP
                     } else {
                         e.presentation.text = "Enable Auto Refresh"
-                        e.presentation.icon = AllIcons.Actions.RerunAutomatically
+                        e.presentation.icon = PhpDumpIcons.RERUN_AUTOMATICALLY
                     }
                 }
             })

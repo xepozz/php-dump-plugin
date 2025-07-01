@@ -13,12 +13,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.jetbrains.php.config.PhpProjectConfigurationFacade
 import com.jetbrains.php.config.interpreters.PhpInterpretersManagerImpl
-import fleet.util.max
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.min
 
 @Service(Service.Level.PROJECT)
 class OpcodesDumperService(var project: Project) : Disposable, DumperServiceInterface {
@@ -46,7 +44,7 @@ class OpcodesDumperService(var project: Project) : Disposable, DumperServiceInte
 // 1>/dev/null
 
         val interpreterPath = interpreter.pathToPhpExecutable ?: return
-        val debugLevel = max(1, min(2, state.debugLevel))
+        val debugLevel = maxOf(1, minOf(2, state.debugLevel))
         val preloadFile = state.preloadFile
 
         val commandArgs = buildList {

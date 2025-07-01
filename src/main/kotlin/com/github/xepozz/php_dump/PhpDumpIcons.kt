@@ -7,4 +7,8 @@ object PhpDumpIcons {
     val POT = IconLoader.getIcon("/icons/pot.svg", PhpDumpIcons::class.java)
     @JvmStatic
     val POT_DARK = IconLoader.getIcon("/icons/pot_dark.svg", PhpDumpIcons::class.java)
+    @JvmStatic
+    val RERUN_AUTOMATICALLY = IconLoader.getIcon("/icons/rerunAutomatically/rerunAutomatically.svg", PhpDumpIcons::class.java)
+    @JvmStatic
+    val RESTART_STOP = IconLoader.getIcon("/icons/restartStop/restartStop.svg", PhpDumpIcons::class.java)
 }
