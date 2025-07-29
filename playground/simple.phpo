@@ -1,0 +1,12 @@
+
+$_main:
+     ; (lines=7, args=0, vars=2, tmps=1)
+     ; (after optimizer)
+     ; /Users/xepozz/IdeaProjects/xepozz/php-opcodes-plugin/playground/simple.php:1-6
+0000 EXT_STMT
+0001 ASSIGN CV0($a) int(2)
+0002 EXT_STMT
+0003 ASSIGN CV1($var) int(1)
+0004 EXT_STMT
+0005 ECHO CV1($var)
+0006 RETURN int(1)
