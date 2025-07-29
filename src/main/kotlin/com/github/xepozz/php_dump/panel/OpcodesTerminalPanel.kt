@@ -1,19 +1,23 @@
 package com.github.xepozz.php_dump.panel
 
 import com.github.xepozz.php_dump.PhpDumpIcons
-import com.github.xepozz.php_dump.actions.ClearConsoleViewAction
 import com.github.xepozz.php_dump.actions.RefreshAction
 import com.github.xepozz.php_dump.configuration.PhpDumpSettingsService
 import com.github.xepozz.php_dump.configuration.PhpOpcacheDebugLevel
 import com.github.xepozz.php_dump.services.OpcodesDumperService
-import com.intellij.execution.filters.TextConsoleBuilderFactory
-import com.intellij.execution.ui.ConsoleViewContentType
+import com.github.xepozz.php_opcodes_language.language.PHPOpFileType
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.EditorKind
+import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -34,19 +38,46 @@ class OpcodesTerminalPanel(
     val viewComponent: JComponent
     val service: OpcodesDumperService = project.getService(OpcodesDumperService::class.java)
     val state = PhpDumpSettingsService.getInstance(project)
-    val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
+    private val document = EditorFactory.getInstance().createDocument("")
+    private val editor = EditorFactory.getInstance().createViewer(document, project, EditorKind.MAIN_EDITOR) as EditorEx
 
     init {
-        viewComponent = consoleView.component
+        viewComponent = editor.component
+        configureEditor()
 
         createToolBar()
         createContent()
     }
 
+    private fun configureEditor() {
+        editor.settings.apply {
+            isBlinkCaret = true
+            isCaretRowShown = true
+            isBlockCursor = false
+            isLineMarkerAreaShown = true
+            isHighlightSelectionOccurrences = true
+        }
+
+        editor.setCaretEnabled(true)
+
+        ApplicationManager.getApplication().runReadAction {
+            val highlighter = EditorHighlighterFactory.getInstance()
+                .createEditorHighlighter(project, PHPOpFileType.INSTANCE)
+
+            editor.highlighter = highlighter
+        }
+    }
+
     private fun createToolBar() {
         val actionGroup = DefaultActionGroup().apply {
             add(RefreshAction { refresh(project, RefreshType.MANUAL) })
-            add(ClearConsoleViewAction(consoleView))
+            add(object : AnAction("Clear Output", "Clear the output", AllIcons.Actions.GC) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    WriteCommandAction.runWriteCommandAction(project) {
+                        document.setText("")
+                    }
+                }
+            })
             add(object : AnAction(
                 "Enable Auto Refresh", "Turns on or off auto refresh of panel context",
                 if (state.autoRefresh) PhpDumpIcons.RESTART_STOP else PhpDumpIcons.RERUN_AUTOMATICALLY
@@ -142,11 +173,15 @@ class OpcodesTerminalPanel(
 
         val result = runBlocking { service.dump(virtualFile) }
 
-        consoleView.clear()
-        consoleView.print(result as? String ?: "No output", ConsoleViewContentType.NORMAL_OUTPUT)
+        val content = result as? String ?: "No output"
+
+        WriteCommandAction.runWriteCommandAction(project) {
+            document.setText(content)
+        }
     }
 
     override fun dispose() {
+        EditorFactory.getInstance().releaseEditor(editor)
     }
 }
 
