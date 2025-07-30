@@ -4,3 +4,4 @@
 .qodana
 build
 .kotlin
+.env
