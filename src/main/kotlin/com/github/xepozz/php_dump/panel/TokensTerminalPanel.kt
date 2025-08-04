@@ -15,6 +15,9 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import java.awt.GridLayout
@@ -91,9 +94,11 @@ class TokensTerminalPanel(
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         val virtualFile = editor.virtualFile ?: return
 
-        val result = runBlocking { service.dump(virtualFile) }
+        CoroutineScope(Dispatchers.IO).launch {
+            val result = runBlocking { service.dump(virtualFile) }
 
-        consoleView.clear()
-        consoleView.print(result as? String ?: "No output", ConsoleViewContentType.NORMAL_OUTPUT)
+            consoleView.clear()
+            consoleView.print(result as? String ?: "No output", ConsoleViewContentType.NORMAL_OUTPUT)
+        }
     }
 }

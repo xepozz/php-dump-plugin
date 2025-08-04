@@ -9,13 +9,13 @@ import com.github.xepozz.php_opcodes_language.language.PHPOpFileType
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.EditorFactory
-import com.intellij.openapi.editor.EditorKind
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
 import com.intellij.openapi.fileChooser.FileChooser
@@ -24,7 +24,9 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.jetbrains.php.lang.PhpFileType
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.GridLayout
 import java.awt.event.ComponentAdapter
@@ -35,11 +37,12 @@ import javax.swing.JPanel
 class OpcodesTerminalPanel(
     val project: Project,
 ) : SimpleToolWindowPanel(false, false), RefreshablePanel, Disposable {
-    val viewComponent: JComponent
-    val service: OpcodesDumperService = project.getService(OpcodesDumperService::class.java)
-    val state = PhpDumpSettingsService.getInstance(project)
-    private val document = EditorFactory.getInstance().createDocument("")
-    private val editor = EditorFactory.getInstance().createViewer(document, project, EditorKind.MAIN_EDITOR) as EditorEx
+    private val viewComponent: JComponent
+    private val service: OpcodesDumperService = project.getService(OpcodesDumperService::class.java)
+    private val state = PhpDumpSettingsService.getInstance(project)
+    private val editorFactory: EditorFactory = EditorFactory.getInstance()
+    private val document = editorFactory.createDocument("")
+    private val editor = editorFactory.createEditor(document, project, PHPOpFileType.INSTANCE, false) as EditorEx
 
     init {
         viewComponent = editor.component
@@ -56,6 +59,9 @@ class OpcodesTerminalPanel(
             isBlockCursor = false
             isLineMarkerAreaShown = true
             isHighlightSelectionOccurrences = true
+            isAutoCodeFoldingEnabled = true
+            isSmartHome = true
+            isShowIntentionBulb = true
         }
 
         editor.setCaretEnabled(true)
@@ -77,6 +83,8 @@ class OpcodesTerminalPanel(
                         document.setText("")
                     }
                 }
+
+                override fun getActionUpdateThread() = ActionUpdateThread.EDT
             })
             add(object : AnAction(
                 "Enable Auto Refresh", "Turns on or off auto refresh of panel context",
@@ -95,6 +103,8 @@ class OpcodesTerminalPanel(
                         e.presentation.icon = PhpDumpIcons.RERUN_AUTOMATICALLY
                     }
                 }
+
+                override fun getActionUpdateThread() = ActionUpdateThread.BGT
             })
             addSeparator()
             add(DefaultActionGroup("Debug Level", true).apply {
@@ -117,6 +127,9 @@ class OpcodesTerminalPanel(
                                     else -> null
                                 }
                             }
+
+                            override fun getActionUpdateThread() = ActionUpdateThread.BGT
+
                         }
                     }
                     .also { addAll(it) }
@@ -139,6 +152,8 @@ class OpcodesTerminalPanel(
                         }
                     refresh(project, RefreshType.MANUAL)
                 }
+
+                override fun getActionUpdateThread() = ActionUpdateThread.BGT
             })
         }
 
@@ -171,17 +186,19 @@ class OpcodesTerminalPanel(
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         val virtualFile = editor.virtualFile ?: return
 
-        val result = runBlocking { service.dump(virtualFile) }
+        CoroutineScope(Dispatchers.IO).launch {
+            val result = service.dump(virtualFile)
 
-        val content = result as? String ?: "No output"
+            val content = result as? String ?: "No output"
 
-        WriteCommandAction.runWriteCommandAction(project) {
-            document.setText(content)
+            WriteCommandAction.runWriteCommandAction(project) {
+                document.setText(content)
+            }
         }
     }
 
     override fun dispose() {
-        EditorFactory.getInstance().releaseEditor(editor)
+        editorFactory.releaseEditor(editor)
     }
 }
 
