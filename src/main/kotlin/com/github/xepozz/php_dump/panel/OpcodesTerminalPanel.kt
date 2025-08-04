@@ -13,11 +13,9 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -58,20 +56,12 @@ class OpcodesTerminalPanel(
             isCaretRowShown = true
             isBlockCursor = false
             isLineMarkerAreaShown = true
-            isHighlightSelectionOccurrences = true
             isAutoCodeFoldingEnabled = true
             isSmartHome = true
             isShowIntentionBulb = true
         }
 
         editor.setCaretEnabled(true)
-
-        ApplicationManager.getApplication().runReadAction {
-            val highlighter = EditorHighlighterFactory.getInstance()
-                .createEditorHighlighter(project, PHPOpFileType.INSTANCE)
-
-            editor.highlighter = highlighter
-        }
     }
 
     private fun createToolBar() {
